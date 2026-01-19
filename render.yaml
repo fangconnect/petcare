@@ -1,0 +1,72 @@
+# Render.com Blueprint Specification
+# This file defines all services for one-click deployment
+# Documentation: https://render.com/docs/blueprint-spec
+
+services:
+  # ============================================
+  # Backend API Service (Go/Fiber)
+  # ============================================
+  - type: web
+    name: pet-care-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    region: singapore  # Closest to Thailand
+    plan: free
+    healthCheckPath: /
+    envVars:
+      # Server Configuration
+      - key: PORT
+        value: 3000
+      - key: ENVIRONMENT
+        value: production
+      
+      # Database Configuration (automatically set by Render)
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pet-care-db
+          property: connectionString
+      
+      # Parse DATABASE_URL into individual env vars for GORM
+      - key: DB_HOST
+        fromDatabase:
+          name: pet-care-db
+          property: host
+      - key: DB_USER
+        fromDatabase:
+          name: pet-care-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: pet-care-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: pet-care-db
+          property: database
+      - key: DB_PORT
+        fromDatabase:
+          name: pet-care-db
+          property: port
+      - key: DB_SSLMODE
+        value: require
+      
+      # JWT Configuration (CHANGE THIS!)
+      - key: JWT_SECRET
+        generateValue: true  # Render will generate a random 32-char string
+      - key: JWT_EXPIRY_HOURS
+        value: 24
+      
+      # CORS - Update with your domain
+      - key: CORS_ORIGINS
+        value: "*"
+
+databases:
+  # ============================================
+  # PostgreSQL Database (Free - 30 days)
+  # ============================================
+  - name: pet-care-db
+    databaseName: petcare
+    user: petcare_user
+    plan: free  # 1GB storage, 256MB RAM, expires in 30 days
+    region: singapore

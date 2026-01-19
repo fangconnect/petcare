@@ -1,0 +1,246 @@
+erDiagram
+    USERS ||--o{ PETS : "owns"
+    USERS ||--o{ USER_PREFERENCES : "has"
+    USERS ||--o{ PAYMENT_TRANSACTIONS : "pays"
+    
+    USERS {
+        uuid id PK
+        string email UK
+        string password_hash
+        string full_name
+        string phone
+        string avatar_url
+        boolean is_active
+        string role "user, admin, clinic_staff"
+        string subscription_tier "free, premium"
+        timestamp subscription_expires_at "nullable"
+        boolean is_trial_used
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    USER_PREFERENCES {
+        uuid id PK
+        uuid user_id FK
+        jsonb notification_settings
+        jsonb display_preferences
+        string language
+        string timezone
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PAYMENT_TRANSACTIONS {
+        uuid id PK
+        uuid user_id FK
+        string provider "apple, google, stripe"
+        string transaction_id "GPA.1234..."
+        decimal amount
+        string currency "USD"
+        string status "success, pending, failed"
+        timestamp created_at
+    }
+
+    PETS ||--o{ PET_DISEASES : "has"
+    PETS ||--o{ ACTIVITY_LOGS : "records"
+    PETS ||--o{ REMINDERS : "has"
+    PETS ||--o{ HEALTH_SUMMARIES : "generates"
+    PETS {
+        uuid id PK
+        uuid owner_id FK
+        string name
+        string species
+        string breed
+        date birth_date
+        decimal current_weight
+        string gender
+        string photo_url
+        string microchip_id
+        jsonb medical_history
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    DISEASES ||--o{ PET_DISEASES : "diagnosed"
+    DISEASES ||--o{ DISEASE_TEMPLATES : "has"
+    DISEASES {
+        uuid id PK
+        string name
+        string name_en
+        string category
+        text description
+        jsonb symptoms
+        jsonb recommended_monitoring
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    PET_DISEASES ||--o{ ACTIVITY_LOGS : "tracks"
+    PET_DISEASES ||--o{ DISEASE_TRACKING_CONFIG : "configures"
+    PET_DISEASES {
+        uuid id PK
+        uuid pet_id FK
+        uuid disease_id FK
+        date diagnosed_date
+        string severity
+        text notes
+        boolean is_active
+        date recovery_date
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    DISEASE_TEMPLATES ||--o{ DISEASE_TRACKING_CONFIG : "uses"
+    DISEASE_TEMPLATES {
+        uuid id PK
+        uuid disease_id FK
+        string template_name
+        jsonb tracking_fields
+        jsonb default_values
+        jsonb validation_rules
+        integer version
+        boolean is_default
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    DISEASE_TRACKING_CONFIG {
+        uuid id PK
+        uuid pet_disease_id FK
+        uuid template_id FK
+        jsonb custom_fields
+        jsonb tracking_schedule
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ACTIVITY_LOGS ||--o{ ACTIVITY_PHOTOS : "includes"
+    ACTIVITY_LOGS {
+        uuid id PK
+        uuid pet_id FK
+        uuid pet_disease_id FK "nullable"
+        string activity_type
+        timestamp logged_at
+        jsonb activity_data
+        text notes
+        uuid logged_by FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ACTIVITY_PHOTOS {
+        uuid id PK
+        uuid activity_log_id FK
+        string photo_url
+        string thumbnail_url
+        text caption
+        integer file_size
+        timestamp created_at
+    }
+
+    REMINDERS ||--o{ REMINDER_LOGS : "tracks"
+    REMINDERS {
+        uuid id PK
+        uuid pet_id FK
+        uuid pet_disease_id FK "nullable"
+        string reminder_type
+        string title
+        text description
+        time scheduled_time
+        string frequency
+        jsonb frequency_config
+        boolean is_active
+        date start_date
+        date end_date
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    REMINDER_LOGS {
+        uuid id PK
+        uuid reminder_id FK
+        timestamp scheduled_for
+        timestamp completed_at
+        string status
+        uuid completed_by FK
+        text notes
+        timestamp created_at
+    }
+
+    HEALTH_SUMMARIES {
+        uuid id PK
+        uuid pet_id FK
+        date summary_date
+        date period_start
+        date period_end
+        jsonb metrics
+        decimal health_score
+        jsonb score_breakdown
+        text assessment
+        jsonb recommendations
+        timestamp generated_at
+        uuid generated_by FK
+    }
+
+    CALCULATION_RULES {
+        uuid id PK
+        string rule_name
+        string rule_type
+        jsonb conditions
+        text formula
+        jsonb parameters
+        boolean is_active
+        timestamp created_at
+    }
+
+    SPECIES_STANDARDS {
+        uuid id PK
+        string species
+        string breed
+        jsonb normal_ranges
+        timestamp created_at
+    }
+
+    CLINICS ||--o{ CLINIC_STAFF : "employs"
+    CLINICS ||--o{ CLINIC_PETS : "treats"
+    CLINICS ||--o{ APPOINTMENTS : "schedules"
+    
+    CLINICS {
+        uuid id PK
+        string clinic_name
+        string license_number
+        string address
+        string phone
+        timestamp created_at
+    }
+
+    CLINIC_STAFF {
+        uuid id PK
+        uuid clinic_id FK
+        uuid user_id FK
+        string role
+        timestamp created_at
+    }
+
+    CLINIC_PETS {
+        uuid id PK
+        uuid clinic_id FK
+        uuid pet_id FK
+        string patient_id
+        timestamp created_at
+    }
+
+    APPOINTMENTS {
+        uuid id PK
+        uuid clinic_id FK
+        uuid pet_id FK
+        uuid vet_id FK
+        timestamp appointment_time
+        string purpose
+        string status
+        text notes
+        timestamp created_at
+    }
