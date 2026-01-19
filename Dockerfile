@@ -1,11 +1,14 @@
-# Use Go 1.21 as the base image for building
-FROM golang:1.21-alpine AS builder
+# Use latest stable Go version
+FROM golang:1.23-alpine AS builder
 
 # Install git (needed for Go modules) and certificates
 RUN apk add --no-cache git ca-certificates
 
 # Set working directory
 WORKDIR /app
+
+# Allow Go to download newer toolchain if needed
+ENV GOTOOLCHAIN=auto
 
 # Copy go mod files first for better caching
 COPY go.mod go.sum ./
